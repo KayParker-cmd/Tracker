@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Quick Health Tracker</title>
+<style>
+  :root{
+    --bg:#f6f8fb;
+    --card:#ffffff;
+    --text:#1f2937;
+    --muted:#6b7280;
+    --line:#e5e7eb;
+    --primary:#2563eb;
+    --primary-2:#dbeafe;
+    --danger:#b91c1c;
+    --green:#047857;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0;
+    font-family:Arial, Helvetica, sans-serif;
+    background:var(--bg);
+    color:var(--text);
+  }
+  .wrap{
+    max-width:1100px;
+    margin:0 auto;
+    padding:20px;
+  }
+  h1{
+    margin:0 0 6px;
+    font-size:clamp(28px, 4vw, 40px);
+  }
+  .subtitle{
+    color:var(--muted);
+    margin-bottom:18px;
+  }
+  .grid{
+    display:grid;
+    grid-template-columns: 1fr 1fr;
+    gap:18px;
+  }
+  .card{
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:18px;
+    padding:16px;
+    box-shadow:0 4px 10px rgba(0,0,0,.04);
+  }
+  .full{
+    grid-column:1 / -1;
+  }
+  .section-title{
+    font-weight:700;
+    font-size:18px;
+    margin:0 0 12px;
+  }
+  .small{
+    color:var(--muted);
+    font-size:13px;
+  }
+  .button-row, .button-col{
+    display:flex;
+    flex-wrap:wrap;
+    gap:10px;
+  }
+  .button-col{
+    flex-direction:column;
+  }
+  button{
+    border:none;
+    border-radius:12px;
+    padding:12px 14px;
+    cursor:pointer;
+    font-weight:700;
+    color:white;
+    background:var(--primary);
+  }
+  button.secondary{
+    color:var(--text);
+    background:#eef2ff;
+    border:1px solid #c7d2fe;
+  }
+  button.success{
+    background:var(--green);
+  }
+  button.danger{
+    background:var(--danger);
+  }
+  button.ghost{
+    background:#f3f4f6;
+    color:var(--text);
+    border:1px solid var(--line);
+  }
+  .pill{
+    display:inline-block;
+    padding:7px 10px;
+    border-radius:999px;
+    background:#f3f4f6;
+    font-size:12px;
+    color:var(--muted);
+    margin:0 6px 6px 0;
+  }
+  .form-grid{
+    display:grid;
+    grid-template-columns: repeat(2, minmax(0,1fr));
+    gap:12px;
+  }
+  .form-grid.three{
+    grid-template-columns: repeat(3, minmax(0,1fr));
+  }
+  label{
+    display:block;
+    font-size:13px;
+    color:var(--muted);
+    margin-bottom:6px;
+  }
+  input, select, textarea{
+    width:100%;
+    border:1px solid var(--line);
+    border-radius:12px;
+    padding:11px 12px;
+    font:inherit;
+    color:var(--text);
+    background:white;
+  }
+  textarea{
+    min-height:100px;
+    resize:vertical;
+  }
+  .log-banner{
+    padding:12px 14px;
+    border-radius:12px;
+    background:var(--primary-2);
+    color:#1e3a8a;
+    font-size:14px;
+  }
+  .actions{
+    display:flex;
+    flex-wrap:wrap;
+    gap:10px;
+    margin-top:14px;
+  }
+  .table-wrap{
+    overflow:auto;
+    border:1px solid var(--line);
+    border-radius:14px;
+  }
+  table{
+    width:100%;
+    border-collapse:collapse;
+    background:white;
+    min-width:780px;
+  }
+  th, td{
+    padding:12px 10px;
+    border-bottom:1px solid var(--line);
+    text-align:left;
+    vertical-align:top;
+    font-size:14px;
+  }
+  th{
+    background:#f9fafb;
+    color:#374151;
+    position:sticky;
+    top:0;
+    z-index:1;
+  }
+  tr:last-child td{
+    border-bottom:none;
+  }
+  .table-note{
+    color:var(--muted);
+    font-size:13px;
+    margin-top:8px;
+  }
+  .empty{
+    padding:18px;
+    color:var(--muted);
+    font-size:14px;
+    text-align:center;
+  }
+  .summary-grid{
+    display:grid;
+    grid-template-columns:repeat(4, minmax(0,1fr));
+    gap:12px;
+  }
+  .stat{
+    border:1px solid var(--line);
+    border-radius:14px;
+    padding:14px;
+    background:#fafafa;
+  }
+  .stat .label{
+    color:var(--muted);
+    font-size:12px;
+    margin-bottom:6px;
+  }
+  .stat .value{
+    font-size:22px;
+    font-weight:700;
+  }
+  @media (max-width: 900px){
+    .grid{grid-template-columns:1fr}
+    .form-grid, .form-grid.three, .summary-grid{grid-template-columns:1fr}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Quick Health Tracker</h1>
+  <div class="subtitle">Fast buttons. Timestamped entries. Notes. Local save. CSV export.</div>
+
+  <div class="grid">
+    <div class="card">
+      <div class="section-title">Quick log buttons</div>
+      <div class="small" style="margin-bottom:12px;">These log immediately with the current date and time.</div>
+
+      <div class="small" style="margin-bottom:6px;">Medication</div>
+      <div class="button-row" style="margin-bottom:12px;">
+        <button onclick="quickLog('Medication','Vyvanse','','')">Vyvanse</button>
+        <button onclick="quickLog('Medication','Tylenol','','')">Tylenol</button>
+        <button onclick="quickLog('Medication','Migraine Pill','','')">Migraine Pill</button>
+        <button class="secondary" onclick="setCategory('Medication')">Custom Medication</button>
+      </div>
+
+      <div class="small" style="margin-bottom:6px;">Water</div>
+      <div class="button-row" style="margin-bottom:12px;">
+        <button onclick="quickLog('Water','Water','250 mL','')">+250 mL</button>
+        <button onclick="quickLog('Water','Water','500 mL','')">+500 mL</button>
+        <button class="secondary" onclick="setCategory('Water')">Custom Water</button>
+      </div>
+
+      <div class="small" style="margin-bottom:6px;">Bathroom</div>
+      <div class="button-row" style="margin-bottom:12px;">
+        <button onclick="quickLog('Bathroom','Pee','','')">Pee</button>
+        <button onclick="quickLog('Bathroom','BM','','')">BM</button>
+        <button class="secondary" onclick="quickLog('Bathroom','BM','','Bristol ')">BM + Note</button>
+      </div>
+
+      <div class="small" style="margin-bottom:6px;">Food</div>
+      <div class="button-row">
+        <button onclick="quickLog('Food','Meal','','')">Meal</button>
+        <button onclick="quickLog('Food','Snack','','')">Snack</button>
+        <button onclick="quickLog('Food','Dairy','','')">Dairy</button>
+        <button onclick="quickLog('Food','Caffeine','','')">Caffeine</button>
+        <button class="secondary" onclick="setCategory('Food')">Custom Food</button>
+      </div>
+
+      <div class="actions">
+        <button class="ghost" onclick="scrollToManual()">Go to manual entry</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="section-title">Today at a glance</div>
+      <div class="summary-grid">
+        <div class="stat">
+          <div class="label">Water today</div>
+          <div class="value" id="waterToday">0 mL</div>
+        </div>
+        <div class="stat">
+          <div class="label">Pees today</div>
+          <div class="value" id="peesToday">0</div>
+        </div>
+        <div class="stat">
+          <div class="label">BMs today</div>
+          <div class="value" id="bmsToday">0</div>
+        </div>
+        <div class="stat">
+          <div class="label">Med entries today</div>
+          <div class="value" id="medsToday">0</div>
+        </div>
+      </div>
+      <div class="log-banner" id="statusBanner" style="margin-top:14px;">
+        Ready. No entries yet.
+      </div>
+      <div style="margin-top:14px;">
+        <span class="pill">Data is saved in your browser</span>
+        <span class="pill">Export to CSV for Excel anytime</span>
+        <span class="pill">Optional notes on any row</span>
+      </div>
+    </div>
+
+    <div class="card full" id="manualEntryCard">
+      <div class="section-title">Manual entry</div>
+      <div class="small" style="margin-bottom:12px;">Use this when you want custom details, amounts, or notes.</div>
+
+      <div class="form-grid three">
+        <div>
+          <label for="entryCategory">Category</label>
+          <select id="entryCategory">
+            <option>Medication</option>
+            <option>Water</option>
+            <option>Bathroom</option>
+            <option>Food</option>
+            <option>Notes</option>
+          </select>
+        </div>
+        <div>
+          <label for="entryItem">Item</label>
+          <input id="entryItem" placeholder="e.g. Vyvanse, Pee, BM, Meal" />
+        </div>
+        <div>
+          <label for="entryAmount">Amount</label>
+          <input id="entryAmount" placeholder="e.g. 250 mL, 1 tablet" />
+        </div>
+      </div>
+
+      <div style="margin-top:12px;">
+        <label for="entryNotes">Notes</label>
+        <textarea id="entryNotes" placeholder="Optional note, e.g. Bristol 5, cramps after eating, headache, etc."></textarea>
+      </div>
+
+      <div class="actions">
+        <button onclick="saveManualEntry()">Save entry</button>
+        <button class="ghost" onclick="clearManualForm()">Clear form</button>
+      </div>
+    </div>
+
+    <div class="card full">
+      <div class="section-title">Entries</div>
+      <div class="actions" style="margin-top:0; margin-bottom:12px;">
+        <button class="success" onclick="exportCSV()">Export CSV</button>
+        <button class="ghost" onclick="clearAllEntries()">Clear all data</button>
+        <button class="ghost" onclick="deleteLastEntry()">Delete last entry</button>
+      </div>
+
+      <div class="table-wrap">
+        <table id="entryTable">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Time</th>
+              <th>Category</th>
+              <th>Item</th>
+              <th>Amount</th>
+              <th>Notes</th>
+            </tr>
+          </thead>
+          <tbody id="entryTbody"></tbody>
+        </table>
+        <div class="empty" id="emptyState">No entries yet.</div>
+      </div>
+      <div class="table-note">Newest entries appear at the top.</div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const STORAGE_KEY = 'quick_health_tracker_entries_v1';
+  let entries = loadEntries();
+
+  function loadEntries() {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      return raw ? JSON.parse(raw) : [];
+    } catch (e) {
+      console.error('Could not load entries', e);
+      return [];
+    }
+  }
+
+  function saveEntries() {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(entries));
+  }
+
+  function nowParts() {
+    const now = new Date();
+    const date = now.toLocaleDateString();
+    const time = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    const iso = now.toISOString();
+    return { date, time, iso };
+  }
+
+  function addEntry(category, item, amount, notes) {
+    const n = nowParts();
+    entries.unshift({
+      timestamp: n.iso,
+      date: n.date,
+      time: n.time,
+      category: category || '',
+      item: item || '',
+      amount: amount || '',
+      notes: notes || ''
+    });
+    saveEntries();
+    render();
+    setStatus(`Logged: ${category} → ${item}${amount ? ' (' + amount + ')' : ''}`);
+  }
+
+  function quickLog(category, item, amount, notes) {
+    addEntry(category, item, amount, notes);
+  }
+
+  function setCategory(category) {
+    document.getElementById('entryCategory').value = category;
+    scrollToManual();
+  }
+
+  function scrollToManual() {
+    document.getElementById('manualEntryCard').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  function saveManualEntry() {
+    const category = document.getElementById('entryCategory').value.trim();
+    const item = document.getElementById('entryItem').value.trim();
+    const amount = document.getElementById('entryAmount').value.trim();
+    const notes = document.getElementById('entryNotes').value.trim();
+
+    if (!item && !notes) {
+      setStatus('Add an item or note before saving.');
+      return;
+    }
+
+    addEntry(category, item || '(Note)', amount, notes);
+    clearManualForm();
+  }
+
+  function clearManualForm() {
+    document.getElementById('entryItem').value = '';
+    document.getElementById('entryAmount').value = '';
+    document.getElementById('entryNotes').value = '';
+  }
+
+  function deleteLastEntry() {
+    if (entries.length === 0) {
+      setStatus('Nothing to delete.');
+      return;
+    }
+    const removed = entries.shift();
+    saveEntries();
+    render();
+    setStatus(`Deleted last entry: ${removed.category} → ${removed.item}`);
+  }
+
+  function clearAllEntries() {
+    if (!confirm('Clear all saved tracker data from this browser?')) return;
+    entries = [];
+    saveEntries();
+    render();
+    setStatus('All tracker data cleared.');
+  }
+
+  function setStatus(message) {
+    document.getElementById('statusBanner').textContent = message;
+  }
+
+  function parseMl(amount) {
+    if (!amount) return 0;
+    const match = String(amount).match(/(\d+(\.\d+)?)\s*mL/i);
+    return match ? Number(match[1]) : 0;
+  }
+
+  function isToday(entry) {
+    const today = new Date().toLocaleDateString();
+    return entry.date === today;
+  }
+
+  function updateSummary() {
+    const todayEntries = entries.filter(isToday);
+
+    const waterMl = todayEntries
+      .filter(e => e.category === 'Water')
+      .reduce((sum, e) => sum + parseMl(e.amount), 0);
+
+    const pees = todayEntries.filter(e => e.category === 'Bathroom' && e.item === 'Pee').length;
+    const bms = todayEntries.filter(e => e.category === 'Bathroom' && e.item === 'BM').length;
+    const meds = todayEntries.filter(e => e.category === 'Medication').length;
+
+    document.getElementById('waterToday').textContent = `${waterMl} mL`;
+    document.getElementById('peesToday').textContent = pees;
+    document.getElementById('bmsToday').textContent = bms;
+    document.getElementById('medsToday').textContent = meds;
+  }
+
+  function renderTable() {
+    const tbody = document.getElementById('entryTbody');
+    const emptyState = document.getElementById('emptyState');
+    tbody.innerHTML = '';
+
+    if (entries.length === 0) {
+      emptyState.style.display = 'block';
+      return;
+    }
+
+    emptyState.style.display = 'none';
+
+    for (const entry of entries) {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td>${escapeHtml(entry.date)}</td>
+        <td>${escapeHtml(entry.time)}</td>
+        <td>${escapeHtml(entry.category)}</td>
+        <td>${escapeHtml(entry.item)}</td>
+        <td>${escapeHtml(entry.amount || '')}</td>
+        <td>${escapeHtml(entry.notes || '')}</td>
+      `;
+      tbody.appendChild(tr);
+    }
+  }
+
+  function escapeHtml(value) {
+    return String(value)
+      .replaceAll('&', '&amp;')
+      .replaceAll('<', '&lt;')
+      .replaceAll('>', '&gt;')
+      .replaceAll('"', '&quot;')
+      .replaceAll("'", '&#039;');
+  }
+
+  function exportCSV() {
+    if (entries.length === 0) {
+      setStatus('No data to export yet.');
+      return;
+    }
+
+    const headers = ['Timestamp', 'Date', 'Time', 'Category', 'Item', 'Amount', 'Notes'];
+    const rows = entries.map(e => [
+      e.timestamp,
+      e.date,
+      e.time,
+      e.category,
+      e.item,
+      e.amount || '',
+      e.notes || ''
+    ]);
+
+    const csv = [headers, ...rows]
+      .map(row => row.map(csvEscape).join(','))
+      .join('\n');
+
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    const today = new Date().toISOString().slice(0,10);
+    a.href = url;
+    a.download = `quick-health-tracker-${today}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+
+    setStatus('CSV exported.');
+  }
+
+  function csvEscape(value) {
+    const text = String(value ?? '');
+    return `"${text.replaceAll('"', '""')}"`;
+  }
+
+  function render() {
+    updateSummary();
+    renderTable();
+  }
+
+  render();
+</script>
+</body>
+</html>
